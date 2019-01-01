@@ -1,6 +1,6 @@
-package alibaba.weibo;
+package com.examination.zhangfang.weibo;
 
-import alibaba.weibo.domain.Message;
+import com.examination.zhangfang.weibo.domain.Message;
 import java.util.List;
 
 /**

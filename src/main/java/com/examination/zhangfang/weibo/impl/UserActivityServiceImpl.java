@@ -1,7 +1,7 @@
-package alibaba.weibo.impl;
+package com.examination.zhangfang.weibo.impl;
 
-import alibaba.weibo.UserActivityService;
-import alibaba.weibo.domain.Message;
+import com.examination.zhangfang.weibo.UserActivityService;
+import com.examination.zhangfang.weibo.domain.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

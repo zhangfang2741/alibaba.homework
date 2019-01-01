@@ -1,4 +1,4 @@
-package alibaba.weibo.domain;
+package com.examination.zhangfang.weibo.domain;
 
 import java.util.Date;
 

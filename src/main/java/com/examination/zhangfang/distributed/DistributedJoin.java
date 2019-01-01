@@ -1,7 +1,7 @@
-package alibaba.distributed;
+package com.examination.zhangfang.distributed;
 
-import alibaba.distributed.constants.Constant;
-import alibaba.distributed.enums.BusinessEnum;
+import com.examination.zhangfang.distributed.constants.Constant;
+import com.examination.zhangfang.distributed.enums.BusinessEnum;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.*;

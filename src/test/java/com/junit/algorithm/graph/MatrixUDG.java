@@ -1,4 +1,4 @@
-package algorithm.graph;
+package com.junit.algorithm.graph;
 
 /**
  * Java: 邻接矩阵表示的"无向图(Matrix Undirected Graph)"

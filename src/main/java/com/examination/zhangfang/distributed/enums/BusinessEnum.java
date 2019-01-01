@@ -1,4 +1,4 @@
-package alibaba.distributed.enums;
+package com.examination.zhangfang.distributed.enums;
 
 public enum BusinessEnum {
     USER(0, "用户"),

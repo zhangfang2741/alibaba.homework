@@ -1,4 +1,4 @@
-package algorithm.tree;
+package com.junit.algorithm.tree;
 
 class Node {
     private int data;

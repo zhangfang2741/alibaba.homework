@@ -1,4 +1,4 @@
-package alibaba.distributed.constants;
+package com.examination.zhangfang.distributed.constants;
 
 public interface Constant {
     //HDFS地址
