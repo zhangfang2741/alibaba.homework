@@ -15,8 +15,6 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.MultipleInputs;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.junit.Before;
-import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,8 +25,8 @@ import java.util.List;
 
 /**
  * 3、分布式计算
- * 两批数据集，一批是(userId,regDate)，一批是(transId,userId,amount,transDate)交易流水记录，均分布存储在100台计算器中，使用何种方式可以统计用户的交易次数：(userId,regDate,transCount)
- * 已知userId的购买商品的记录中，有少量特殊userId，这些userId有大量的购买记录（单机无法承受单个用户的所有购买记录）。如何处理？
+ *    两批数据集，一批是(userId,regDate)，一批是(transId,userId,amount,transDate)交易流水记录，均分布存储在100台计算器中，使用何种方式可以统计用户的交易次数：(userId,regDate,transCount)
+ *    已知userId的购买商品的记录中，有少量特殊userId，这些userId有大量的购买记录（单机无法承受单个用户的所有购买记录）。如何处理？
  */
 public class DistributedJoin {
     private static final Logger LOGGER = LoggerFactory.getLogger(DistributedJoin.class);
@@ -38,37 +36,30 @@ public class DistributedJoin {
     //定义交易文件地址列表
     public static final List<String> tradePathList = new ArrayList<>(256);
     //定义将本地用户文件合并上传到HDFS的路径
-    public static final String userHdfsPath = Constant.HADOOPURI + "/zhangfang/user.txt";
+    public static final String userHdfsPath = Constant.HADOOPURI + "/zhangfang/user_001.txt";
     //定义将本地交易文件合并上传到HDFS的路径
-    public static final String tradeHdfsPath = Constant.HADOOPURI + "/zhangfang/trade.txt";
+    public static final String tradeHdfsPath = Constant.HADOOPURI + "/zhangfang/trade_001.txt";
     //定义将用户和交易文件关联计算后的结果在HDFS的临时分区路径
-    public static final String joinTempHdfsPath = Constant.HADOOPURI + "/zhangfang/joinTemp";
+    public static final String joinTempHdfsPath = Constant.HADOOPURI + "/zhangfang/joinTemp_001";
     //定义将用户和交易文件关联计算后的结果在HDFS的join路径
-    public static final String joinHdfsPath = Constant.HADOOPURI + "/zhangfang/join";
+    public static final String joinHdfsPath = Constant.HADOOPURI + "/zhangfang/join_001";
+
+
     /**
-     * 预处理，加载用户和交易文件地址
+     * MAIN
      */
-    @Before
-    public void before() {
+    public static void main(String[] args) {
         try {
-            String rootPath = this.getClass().getResource("/").getFile();
+            //预处理，加载用户和交易文件地址
+            String rootPath = DistributedJoin.class.getResource("/").getFile();
             //初始化用户文件列表（userId,regDate），如：zhangfang,2012-09-09
             userPathList.add(rootPath + "distributed/user001.txt");
             userPathList.add(rootPath + "distributed/user002.txt");
             //初始化交易文件列表(transId,userId,amount,transDate)，如：001,zhangfang,30.00,2018-12-12
             tradePathList.add(rootPath + "distributed/trade001.txt");
             tradePathList.add(rootPath + "distributed/trade002.txt");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
-    /**
-     * MAIN
-     */
-    @Test
-    public void main() {
-        try {
+
             //初始化Hadoop配置
             Configuration conf = new Configuration();
             //对用户文件进行合并上传到HDFS
@@ -91,7 +82,7 @@ public class DistributedJoin {
      * @param conf
      * @throws Exception
      */
-    public void firstJobDeal(Configuration conf) throws Exception {
+    public static void firstJobDeal(Configuration conf) throws Exception {
         //定义Hadoop firstjob
         Job firstjob = Job.getInstance();
         firstjob.setJarByClass(DistributedJoin.class);
@@ -130,13 +121,13 @@ public class DistributedJoin {
      * @param conf
      * @throws Exception
      */
-    public void secondJobDeal(Configuration conf) throws Exception {
+    public static void secondJobDeal(Configuration conf) throws Exception {
         //定义Hadoop firstjob
         Job secondJob = Job.getInstance();
         secondJob.setJarByClass(DistributedJoin.class);
         //通配符获取临时文件列表
         FileSystem fileSystem = FileSystem.get(new URI(Constant.HADOOPURI), conf);
-        FileStatus[] status = fileSystem.globStatus(new Path(joinTempHdfsPath+"/part-r-*"));
+        FileStatus[] status = fileSystem.globStatus(new Path(joinTempHdfsPath + "/part-r-*"));
         for (FileStatus f : status) {
             MultipleInputs.addInputPath(secondJob, f.getPath(),
                     TextInputFormat.class, SummaryMapper.class);
@@ -228,6 +219,7 @@ public class DistributedJoin {
             }
         }
     }
+
     /**
      * Reduce
      * 对处理结果进行Reducer的方法
@@ -264,10 +256,10 @@ public class DistributedJoin {
             String line = value.toString().trim();
             if (line.length() > 0) {
                 String[] str = line.split("\t");
-                String regDate=str[1];
-                int transCount=Integer.parseInt(str[2]);
+                String regDate = str[1];
+                int transCount = Integer.parseInt(str[2]);
                 context.write(new Text(str[0].trim()),
-                        new Text(String.format("%s\t%d%n", regDate,transCount)));
+                        new Text(String.format("%s\t%d%n", regDate, transCount)));
             }
         }
     }
@@ -285,13 +277,13 @@ public class DistributedJoin {
             for (Text text : values) {
                 String value = new String(text.copyBytes());
                 String[] valueSplit = value.split("\t");
-                if(StringUtils.isNotEmpty(valueSplit[0]) && !"null".equals(valueSplit[0])){
-                    regDate=valueSplit[0];
+                if (StringUtils.isNotEmpty(valueSplit[0]) && !"null".equals(valueSplit[0])) {
+                    regDate = valueSplit[0];
                 }
-                if(StringUtils.isNotEmpty(valueSplit[1]) && !"null".equals(valueSplit[1])){
-                    transCount=transCount+Integer.parseInt(valueSplit[1].
-                            replaceAll("\n","").
-                            replaceAll("\r",""));
+                if (StringUtils.isNotEmpty(valueSplit[1]) && !"null".equals(valueSplit[1])) {
+                    transCount = transCount + Integer.parseInt(valueSplit[1].
+                            replaceAll("\n", "").
+                            replaceAll("\r", ""));
                 }
             }
             context.write(key, new Text(String.format("%s\t%d%n", regDate, transCount)));
