@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * 3、分布式计算
@@ -295,12 +296,12 @@ public class DistributedJoin {
      * 根据分区大小numPartition随机分配到相应的分区
      */
     public static class JoinPartitioner extends Partitioner<Text, Text> {
+        private static Random random = new Random();
         @Override
         public int getPartition(Text key, Text value, int numPartitions) {
-            // Random random = new Random();
-            // int randomPartitioner = random.nextInt(numPartitions);
-            // return randomPartitioner;
-            return (((key).hashCode() + value.hashCode()) & Integer.MAX_VALUE) % numPartitions;
+             int randomPartitioner = random.nextInt(numPartitions);
+             return randomPartitioner;
         }
     }
+
 }
